@@ -120,6 +120,7 @@ let moyenne_classe_updated = total_moyenne_updated / nombre_eleves;
 console.log(
   "La nouvelle moyenne de la classe est de : " + moyenne_classe_updated
 );
-// Mise à jour du nombre d'élèves
+
+// Mise à jour du nombre d'élèves.
 nombre_eleves = Eleves.length;
 console.log(nombre_eleves);
