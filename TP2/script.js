@@ -27,7 +27,7 @@ let notes_non_triees = notes.slice(); // Copier le tableau non trié pour l'affi
 console.log("Tableau des notes non triées : " + notes); // Afficher le tableau original des notes
 console.log("Taille du tableau : " + notes.length); // Afficher le nombre d'éléments dans le tableau
 console.log("Note maximale possible : " + note_maximum); // Afficher la note maximale possible
-console.log("Note minimale possible : 0"); // Afficher la note minimale possible (toujours 0)
+console.log("Note minimale possible : 0"); // Afficher la note minimale possible
 
 //Partie 2 :Premiere étape tri par sélection
 // Trouver l'index de la plus petite note dans le tableau non trié
@@ -82,7 +82,7 @@ let echanges_decroissants = 0; // Compteur d'échanges pour le tri décroissant
 for (let i = 0; i < notes_decroissantes.length - 1; i++) {
   // Boucle principale pour le tri décroissant
   // Trouver l'index de la plus grande note dans la sous-partie non triée du tableau
-  let index_max = i; // Initialiser index_max à la position actuelle
+  let index_max = i; //Initialiser index_max à la position actuelle
   for (let j = i + 1; j < notes_decroissantes.length; j++) {
     // Parcourir la sous-partie non triée
     if (notes_decroissantes[j] > notes_decroissantes[index_max]) {
