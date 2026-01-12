@@ -112,7 +112,7 @@ function afficherDonnees(tableau) {
 // Affiche les données statistiques des élèves
 afficherDonnees(eleves);
 
-// Fonction pour échanger deux éléments dans un tableau
+// Fonction pour échanger deux éléments dans un tableau.
 function swap(tableau, indexA, indexB) {
   let temp = tableau[indexA];
   tableau[indexA] = tableau[indexB];
