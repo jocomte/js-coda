@@ -12,75 +12,79 @@ class Player {
     this.skin = skin;
     this.position = position;
     this.health = health;
+    this.isWalking = false;
+    this.isAttacking = false;
+    this.isDying = false;
+    this.isIdle = false;
+    this.direction = "down";
+    this.WalkSpriteDuration = 0;
+    this.WalkSpriteIndex = 0;
+    this.WalkSpriteNumber = 9;
+    this.AttackSpriteDuration = 0;
+    this.AttackSpriteIndex = 0;
+    this.AttackSpriteNumber = 6;
+    this.DeathSpriteDuration = 0;
+    this.DeathSpriteIndex = 0;
+    this.DeathSpriteNumber = 6;
+    this.IdleSpriteDuration = 0;
+    this.IdleSpriteIndex = 0;
+    this.IdleSpriteNumber = 0;
+    this.currentWalkFrame = 0;
+    this.currentAttackFrame = 0;
+    this.currentDeathFrame = 0;
+    this.currentIdleFrame = 0;
     // Attributs supplémentaires du backend
     Object.assign(this, options);
   }
 
-  // Méthode pour déplacer le joueur
-  move(dx, dy) {
-    this.position.x += dx;
-    this.position.y += dy;
-  }
-
-  // Méthode pour infliger des dégâts
-  takeDamage(damage) {
-    this.health -= damage;
-    if (this.health < 0) this.health = 0;
-  }
-
-  // Méthode pour soigner
-  heal(amount) {
-    this.health += amount;
-  }
-
-  // Méthode pour vérifier si le joueur est vivant
-  isAlive() {
-    return this.health > 0;
-  }
-
-  // Méthode pour obtenir les informations du joueur
-  getInfo() {
-    return `${this.name} (${this.skin}) at (${this.position.x}, ${this.position.y}) - Health: ${this.health}`;
-  }
-
-  // Méthode pour mettre à jour les attributs depuis le serveur
-  updateFromServer(data) {
-    Object.assign(this, data);
+  animate() {
+    // the player is walking
+    if (this.isWalking) {
+      this.currentWalkFrame++;
+      if (this.currentWalkFrame >= this.WalkSpriteDuration) {
+        this.currentWalkFrame = 0;
+        this.WalkSpriteIndex++;
+        if (this.WalkSpriteIndex >= this.WalkSpriteNumber) {
+          this.WalkSpriteIndex = 0;
+        }
+      }
+    }
+    // the player is attacking
+    else if (this.isAttacking) {
+      this.AttackSpriteDuration++;
+      if (this.AttackSpriteDuration >= this.AttackSpriteNumber) {
+        this.AttackSpriteIndex = 0;
+      }
+    }
+    // the player is dying
+    else if (this.isDying) {
+      this.DeathSpriteDuration++;
+      if (this.DeathSpriteDuration >= this.DeathSpriteNumber) {
+        this.DeathSpriteIndex = 0;
+      }
+    } else {
+      this.IdleSpriteDuration++;
+      if (this.IdleSpriteDuration >= this.IdleSpriteNumber) {
+        this.IdleSpriteIndex = 0;
+      }
+    }
   }
 }
+console.log("Player class loaded");
 
 // Tests
 const player1 = new Player();
-console.log("Player 1 initial:", player1.getInfo());
+console.log("Player 1:", player1);
 
 const player2 = new Player(1, "Alice", "warrior", { x: 10, y: 20 });
-console.log("Player 2 initial:", player2.getInfo());
+console.log("Player 2:", player2);
 
-// Test move
-player1.move(5, 3);
-console.log("Player 1 after move:", player1.getInfo());
+// Test animation
+player1.isWalking = true;
+player1.WalkSpriteDuration = 2; // set duration for testing
+for (let i = 0; i < 10; i++) {
+  player1.animate();
+  console.log(`Walk frame ${i}: index ${player1.WalkSpriteIndex}`);
+}
 
-// Test takeDamage
-player2.takeDamage(30);
-console.log("Player 2 after damage:", player2.getInfo());
-console.log("Player 2 is alive:", player2.isAlive());
-
-// Test heal
-player2.heal(20);
-console.log("Player 2 after heal:", player2.getInfo());
-
-// Test excessive damage
-player2.takeDamage(150);
-console.log("Player 2 after excessive damage:", player2.getInfo());
-console.log("Player 2 is alive:", player2.isAlive());
-
-// Test with options (attributs backend)
-const player3 = new Player(2, "Bob", "mage", { x: 0, y: 0 }, 100, {
-  level: 3,
-  experience: 500,
-});
-console.log("Player 3 with backend attributes:", player3);
-
-// Test update from server
-player3.updateFromServer({ level: 4, experience: 600, serverAttr: "updated" });
-console.log("Player 3 after server update:", player3);
+/*walkspriteduration= 2;  WalkSpriteIndex=0 ; WalkSpriteNumber = 9; isWalking = false; isAttacking; isDying */
