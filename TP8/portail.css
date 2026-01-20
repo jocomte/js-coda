@@ -1,0 +1,189 @@
+/* Reset et Base */
+body {
+  margin: 0;
+  padding: 0;
+  background: url(img/Gemini_Generated_Image_w47k56w47k56w47k.png);
+  background-size: cover;
+  background-position: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  min-height: 100vh;
+}
+
+/* Conteneur Principal (Carte Portail) */
+.portal-container {
+  background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  width: 380px;
+  border: 2px solid #e94560;
+}
+
+h1 {
+  margin: 0 0 1.2rem 0;
+  color: #e94560;
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px #e94560;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Champ Pseudo */
+.input-group {
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.85rem;
+  color: #aeb8c4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="url"] {
+  width: 100%;
+  padding: 9px 12px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 2px solid #0f3460;
+  background: #0f3460;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="url"]:focus {
+  border-color: #e94560;
+  box-shadow: 0 0 12px rgba(233, 69, 96, 0.4);
+}
+
+input[type="text"]::placeholder,
+input[type="url"]::placeholder {
+  color: #7a8a9a;
+}
+
+/* Sélection des Skins */
+.skin-selection {
+  background: rgba(15, 52, 96, 0.3);
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.2rem;
+  border: 1px solid #0f3460;
+}
+
+.skin-selection h3 {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+  color: #53d4ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.skins-grid {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0.3rem;
+}
+
+.skins-grid::-webkit-scrollbar {
+  width: 5px;
+}
+
+.skins-grid::-webkit-scrollbar-track {
+  background: rgba(15, 52, 96, 0.3);
+}
+
+.skins-grid::-webkit-scrollbar-thumb {
+  background: #e94560;
+  border-radius: 5px;
+}
+
+.skin-option {
+  width: 60px;
+  height: 60px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #0f3460;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  display: block;
+}
+
+.skin-option:hover {
+  transform: scale(1.1);
+  border-color: #53d4ff;
+  box-shadow: 0 4px 15px rgba(83, 212, 255, 0.3);
+}
+
+.skin-option.selected {
+  border-color: #e94560;
+  box-shadow: 0 0 15px #e94560;
+  background: #1a3a52;
+}
+
+/* Bouton */
+.btn-primary {
+  background: linear-gradient(135deg, #e94560 0%, #c0354a 100%);
+  color: white;
+  border: none;
+  padding: 11px 30px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.btn-primary:hover {
+  background: #e94560;
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Gestion des erreurs */
+.hidden {
+  display: none;
+}
+
+#error-message {
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 0.8rem;
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid rgba(255, 107, 107, 0.6);
+  border-radius: 6px;
+  line-height: 1.4;
+  order: -1;
+}
