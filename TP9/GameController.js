@@ -10,6 +10,9 @@ class GameController {
     // Instance de la classe Game pour stocker les informations de la partie et des joueurs
     this.game = new Game();
 
+    // Instance de GameView pour gérer l'affichage
+    this.gameView = new GameView(this.game);
+
     // Récupération des données stockées dans le localStorage
     this.name = localStorage.getItem("name");
     this.serverUrl = localStorage.getItem("serverUrl");
@@ -82,7 +85,6 @@ class GameController {
     this.socket.onmessage = (event) => {
       // Transformation de la chaîne JSON reçue en objet JS
       const backendData = JSON.parse(event.data);
-      console.log("Message reçu du backend:", backendData);
 
       // Mise à jour des données stockées dans le modèle Game
       // Mise à jour de l'état du jeu
@@ -91,9 +93,45 @@ class GameController {
       this.game.timer = backendData.timer;
 
       // Mise à jour des joueurs
-      this.game.players = backendData.players;
+      // Le backend envoie un objet avec les IDs comme clés
+      if (backendData.players) {
+        // Pour chaque joueur reçu du backend
+        for (const playerId in backendData.players) {
+          const backendPlayer = backendData.players[playerId];
 
-      console.log("Modèle Game mis à jour:", this.game);
+          // Vérifier si le joueur existe déjà dans le jeu
+          if (!this.game.players[playerId]) {
+            // Créer une nouvelle instance de Player avec les données du backend
+            this.game.players[playerId] = new Player(
+              playerId,
+              backendPlayer.name,
+              backendPlayer.skinPath,
+              backendPlayer.position,
+              backendPlayer.hp,
+              backendPlayer,
+            );
+          } else {
+            // Mettre à jour les propriétés du joueur existant
+            const existingPlayer = this.game.players[playerId];
+
+            // Mettre à jour les propriétés du backend (sans écraser les indices d'animation)
+            existingPlayer.name = backendPlayer.name;
+            existingPlayer.skinPath = backendPlayer.skinPath;
+            existingPlayer.position = backendPlayer.position;
+            existingPlayer.hp = backendPlayer.hp;
+            existingPlayer.maxHp = backendPlayer.maxHp;
+            existingPlayer.speed = backendPlayer.speed;
+            existingPlayer.direction = backendPlayer.direction;
+            existingPlayer.isAttacking = backendPlayer.isAttacking;
+            existingPlayer.isWalking = backendPlayer.isWalking;
+            existingPlayer.isDying = backendPlayer.isDying;
+            existingPlayer.lvl = backendPlayer.lvl;
+
+            // Copier les autres propriétés du backend (hpRegenRate, attackCooldown, etc.)
+            Object.assign(existingPlayer, backendPlayer);
+          }
+        }
+      }
     };
   }
 
@@ -199,6 +237,8 @@ class GameController {
     // console.log("Jeu terminé:", this.game.isOver);
     // console.log("Joueurs:", this.game.players);
     // console.groupEnd();
+
+    this.gameView.render();
 
     // Request the next frame
     requestAnimationFrame(this.loop);
