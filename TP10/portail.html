@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JS Arena - Portail</title>
+    <link rel="stylesheet" href="portail.css" />
+  </head>
+  <body>
+    <div class="portal-container">
+      <h1>JS ARENA</h1>
+
+      <div class="login-form">
+        <div class="input-group">
+          <label for="pseudo">Votre Pseudo</label>
+          <input
+            type="text"
+            id="pseudo"
+            placeholder="Entrez votre nom de guerrier..."
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="serverUrl">URL du Serveur</label>
+          <input
+            type="url"
+            id="serverUrl"
+            placeholder="ws://localhost:8000/ws"
+          />
+        </div>
+
+        <div class="skin-selection">
+          <h3>Choisissez votre Héros</h3>
+          <div id="skins-container" class="skins-grid"></div>
+        </div>
+
+        <p id="error-message" class="hidden">
+          Veuillez entrer un pseudo et choisir un skin.
+        </p>
+
+        <button id="btn-join" class="btn-primary">REJOINDRE L'ARÈNE</button>
+      </div>
+    </div>
+
+    <script src="portail.js"></script>
+  </body>
+</html>
