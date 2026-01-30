@@ -10,9 +10,8 @@ function loadPlayers() {
       return;
     }
 
-    const url = `http://${address}/api/listPlayers`;
-
     try {
+      const url = `http://${address}/api/listPlayers`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -20,6 +19,14 @@ function loadPlayers() {
       }
 
       const data = await response.json();
+      // noms des joueurs actuellement sur le serveur
+      const serverPlayerNames = data.map((p) => p.name);
+
+      // supprimer les joueurs qui ne sont plus sur le serveur
+      playersStats = playersStats.filter((p) =>
+        serverPlayerNames.includes(p.name),
+      );
+
       let players = [];
       for (let i = 0; i < data.length; i++) {
         players.push(data[i]);
@@ -28,6 +35,17 @@ function loadPlayers() {
       document.getElementById("connectBtn").style.display = "none";
       document.querySelector('label[for="serverAddress"]').style.display =
         "none";
+      players = players.filter(
+        (player) => player !== undefined && player !== null,
+      );
+
+      players.sort((a, b) => a.name.localeCompare(b.name));
+      // console.log(players);
+      if (players.length === 0) {
+        removeRankingContainerIfEmpty();
+        alert("Aucun joueur trouvé");
+        return;
+      }
 
       showPlayers(players);
       createRankingContainer(players);
@@ -36,6 +54,7 @@ function loadPlayers() {
       // console.log("Nom :", data.name);
     } catch (error) {
       console.log("Erreur lors du chargement :", error);
+      // alert("Echec de la connection au serveur");
     }
 
     // console.log(url);
@@ -50,9 +69,9 @@ async function loadPlayerStats(name) {
   }
 
   // console.log(name);
-  const url = `http://${address}/api/stats?name=${name}`;
 
   try {
+    const url = `http://${address}/api/stats?name=${name}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -66,66 +85,43 @@ async function loadPlayerStats(name) {
     // console.log("Nom :", data.name);
   } catch (error) {
     console.log("Erreur lors du chargement :", error);
+    // alert("Echec de la connection au serveur");
   }
 
   // console.log(url);
 }
 
-// function loadRanking(ranking) {
-//     let rank = [];
-//     for (let player of ranking.isAlive) {
-//         // console.log(player);
-//         rank.push(player.name);
-//     }
-
-//     for (let player of ranking.isDying) {
-//         rank.push(player.name);
-//     }
-
-//     console.log(rank);
-//     return rank;
-// }
-
 function createPlayerSelect() {
   const container = document.getElementById("server-config");
-  const label = document.createElement("label");
-  label.setAttribute("for", "playerSelect");
-  label.textContent = " 🎮 Voir les stats d'un joueur :";
+
+  // Supprimer ancien select et bouton si existants
+  const oldSpan = document.getElementById("span");
+  if (oldSpan) oldSpan.remove();
+
+  const label = container.querySelector("label[for='playerSelect']");
+  if (label) label.remove();
+
+  // Création du nouveau label et select
+  const newLabel = document.createElement("label");
+  newLabel.setAttribute("for", "playerSelect");
+  newLabel.textContent = " 🎮 Voir les stats d'un joueur :";
+
   const span = document.createElement("span");
   span.id = "span";
+  span.innerHTML = "";
 
   const select = document.createElement("select");
   select.id = "playerSelect";
   select.classList.add("player-select");
+
   const button = document.createElement("button");
   button.textContent = "Classement général";
   button.id = "generalRanking";
 
-  container.appendChild(label);
+  container.appendChild(newLabel);
   span.appendChild(select);
   span.appendChild(button);
   container.appendChild(span);
-  // const buttonGR = document.getElementById("")
-
-  // const buttonGene = document.getElementById("generalRanking");
-  // button.addEventListener("click", () => {
-  //     let rankingDiv = document.createElement("div");
-  //     rankingDiv.id = "rankingContainer";
-  //     rankingDiv.style.marginTop = "20px";
-  //     document.body.appendChild(rankingDiv);
-  //     console.log("hdbvhsgbv");
-  // //     // Récupérer tous les joueurs du select avec leurs stats
-  //     const options = Array.from(select.options);
-  //     const playersForTable = options.map(opt => ({
-  //         name: opt.value,
-  //         totalKills: parseInt(opt.dataset.kills || 0),
-  //         totalDeaths: parseInt(opt.dataset.deaths || 0),
-  //         kdRatio: parseFloat(opt.dataset.kd || 0)
-  //     }));
-
-  //     // Afficher le tableau
-  //     //     showGeneralRanking(playersForTable);
-  // });
 }
 
 function showPlayers(players) {
@@ -134,6 +130,7 @@ function showPlayers(players) {
   select.innerHTML = "";
 
   players.forEach((player) => {
+    if (player === undefined) delete players.player;
     const option = document.createElement("option");
     // console.log(player.name);
     let name = player.name;
@@ -142,19 +139,20 @@ function showPlayers(players) {
       name = name.slice(0, 9) + "...";
     }
 
-    option.value = player.name; // valeur complète (important)
+    option.value = player.name;
     option.textContent = name;
     select.appendChild(option);
   });
 
   select.addEventListener("change", () => {
     const selectedPlayerName = select.value;
-    console.log("Joueur sélectionné :", selectedPlayerName);
+    // console.log("Joueur sélectionné :", selectedPlayerName);
     loadPlayerStats(selectedPlayerName).then((selectedPlayer) => {
-      console.log(selectedPlayer);
-      console.log("Joueur sélectionné :", selectedPlayer);
+      // console.log(selectedPlayer);
+      // console.log("Joueur sélectionné :", selectedPlayer);
       showStatsPlayer(selectedPlayer);
     });
+    highlightPlayerInTable(selectedPlayerName);
 
     // const selectedPlayer = await loadPlayerStats(selectedPlayerName);
   });
@@ -183,23 +181,47 @@ function showStatsPlayer(player) {
   container.appendChild(stats);
 }
 
+let rankingVisible = false;
+
 function createRankingContainer(players) {
   const button = document.getElementById("generalRanking");
 
   button.addEventListener("click", async () => {
-    playersStats = [];
+    const rankingDiv = getRankingContainer();
 
-    for (const p of players) {
-      const stats = await loadPlayerStats(p.name);
-      playersStats.push(stats);
+    // Si le tableau est déjà visible → on le supprime
+    if (rankingVisible) {
+      removeRankingContainerIfEmpty();
+      rankingDiv.innerHTML = ""; // supprime tableau + filtre
+      rankingVisible = false;
+      return;
+    }
+
+    // Sinon, on charge les stats si nécessaire
+    if (playersStats.length === 0) {
+      playersStats = await Promise.all(
+        players.map((p) => loadPlayerStats(p.name)),
+      );
+
+      // enlever les joueurs null
+      playersStats = playersStats.filter((p) => p !== null);
     }
 
     showGeneralRanking(playersStats);
     sortBy(playersStats);
+
+    rankingVisible = true;
   });
 }
 
-function showGeneralRanking(players) {
+function removeRankingContainerIfEmpty() {
+  const div = document.getElementById("rankingContainer");
+  if (div) div.remove();
+  rankingVisible = false;
+}
+
+function showGeneralRanking(players, highlightColumn) {
+  players = players.filter((p) => p && p.name);
   const rankingDiv = getRankingContainer();
 
   // Supprimer seulement l'ancien tableau
@@ -229,23 +251,56 @@ function showGeneralRanking(players) {
 
   players.forEach((player, index) => {
     const tr = document.createElement("tr");
+    tr.dataset.playerName = player.name;
+
+    let medal = "";
+    if (index === 0) medal = "🥇";
+    else if (index === 1) medal = "🥈";
+    else if (index === 2) medal = "🥉";
+
     tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${player.overallRanking}</td>
-            <td>${player.name}</td>
-            <td>${player.totalKills}</td>
-            <td>${player.totalDeaths}</td>
-            <td>${player.kdRatio}</td>
-            <td>${player.lastGameRank}</td>
-        `;
+        <td>${medal} ${index + 1}</td>
+        <td>${player.overallRanking}</td>
+        <td>${player.name}</td>
+        <td>${player.totalKills}</td>
+        <td>${player.totalDeaths}</td>
+        <td>${player.kdRatio}</td>
+        <td>${player.lastGameRank}</td>
+    `;
+    if (highlightColumn !== null && tr.children[highlightColumn]) {
+      tr.children[highlightColumn].classList.add("highlight");
+    } else {
+      tr.children[2].classList.add("highlight");
+    }
     tbody.appendChild(tr);
+
+    tr.addEventListener("click", async () => {
+      showStatsPlayer(player);
+      highlightPlayerInTable(player.name);
+      const select = document.getElementById("playerSelect");
+      if (select) {
+        select.value = player.name;
+      }
+    });
   });
 
   rankingDiv.appendChild(table);
 }
 
+function highlightPlayerInTable(playerName) {
+  const rows = document.querySelectorAll("#rankingContainer table tbody tr");
+
+  rows.forEach((row) => {
+    row.classList.remove("selected-player");
+    if (row.dataset.playerName === playerName) {
+      row.classList.add("selected-player");
+    }
+  });
+}
+
 function sortBy(players) {
   const div = getRankingContainer();
+  let highlightColumn = null;
 
   // supprimer ancien select
   const oldSelect = document.getElementById("sortSelect");
@@ -254,7 +309,14 @@ function sortBy(players) {
   const filter = document.createElement("select");
   filter.id = "sortSelect";
 
-  const filters = ["Classement M", "NK", "NM", "Ratio K/D", "Position CDP"];
+  const filters = [
+    "Pseudo",
+    "Classement Moyen",
+    "Kills",
+    "Morts",
+    "Ratio K/D",
+    "Position CDP",
+  ];
 
   filters.forEach((f) => {
     const option = document.createElement("option");
@@ -269,24 +331,33 @@ function sortBy(players) {
     let sortedPlayers = [...players];
 
     switch (filter.value) {
-      case "Classement M":
+      case "Classement Moyen":
         sortedPlayers.sort((a, b) => a.overallRanking - b.overallRanking);
+        highlightColumn = 1;
         break;
-      case "NK":
+      case "Pseudo":
+        sortedPlayers.sort((a, b) => a.name.localeCompare(b.name));
+        highlightColumn = 2;
+        break;
+      case "Kills":
         sortedPlayers.sort((a, b) => b.totalKills - a.totalKills);
+        highlightColumn = 3;
         break;
-      case "NM":
+      case "Morts":
         sortedPlayers.sort((a, b) => b.totalDeaths - a.totalDeaths);
+        highlightColumn = 4;
         break;
       case "Ratio K/D":
         sortedPlayers.sort((a, b) => b.kdRatio - a.kdRatio);
+        highlightColumn = 5;
         break;
       case "Position CDP":
         sortedPlayers.sort((a, b) => a.lastGameRank - b.lastGameRank);
+        highlightColumn = 6;
         break;
     }
 
-    showGeneralRanking(sortedPlayers);
+    showGeneralRanking(sortedPlayers, highlightColumn);
   });
 }
 
@@ -303,47 +374,6 @@ function getRankingContainer() {
   return div;
 }
 
-// function findRankPlayer(playerName) {
-//     const rankingGame = JSON.parse(localStorage.getItem("ranking") || "{}");
-//     const ranking = loadRanking(rankingGame);
-//     let rankingList = {};
-
-//     for (let i = 0; i < ranking.length; i++) {
-//         const player = ranking[i];
-
-//         if (!(player in rankingList)) {
-//             rankingList[player] = [i + 1];
-//         } else {
-//             rankingList[player].push(i + 1);
-//         }
-//     }
-
-//     console.log(rankingList);
-
-//     if (!(playerName in rankingList)) return " "; // si le joueur n'existe pas
-
-//     const positions = rankingList[playerName];      // récupère le tableau des positions
-//     const lastPosition = positions[positions.length - 1];
-
-//     return lastPosition;
-//     // if(ranking[i] === playerName) return i + 1;
-
-//     // return " ";
-// }
-
-// const name = "fidel";
-loadPlayers();
-// const ranking = JSON.parse(localStorage.getItem("ranking") || "{}");
-// loadRanking(ranking);
-
-// console.log(name);
-// loadRanking(ranking);
-// console.log(ranking);
-// setInterval(() => {
-//     // loadPlayers();
-//     loadPlayerStats(name);
-//     // let ranking = game.getRanking()
-//     // console.log(ranking);
-//     const ranking = JSON.parse(localStorage.getItem("ranking") || "{}");
-//     loadRanking(ranking);
-// }, 5000);
+setInterval(() => {
+  loadPlayers();
+}, 5000);
